@@ -1,0 +1,20 @@
+# Caddy config for the DivineSMP web client + relay.
+# Caddy gets the HTTPS certificate by itself. Change the domain on the next line
+# to whatever subdomain you pointed at this machine.
+client.divinesmp.org {
+	encode zstd gzip
+
+	# the relay: the game connects here (wss://client.divinesmp.org/wisp/)
+	handle /wisp/* {
+		reverse_proxy 127.0.0.1:6001
+	}
+
+	# the web client files (the folder you uploaded)
+	handle {
+		root * /var/www/divinesmp-web
+		# the page and its update files must never be cached for long, so updates show up
+		@fresh path / /index.html /sw.js /version.json /manifest.webmanifest
+		header @fresh Cache-Control "no-cache"
+		file_server
+	}
+}

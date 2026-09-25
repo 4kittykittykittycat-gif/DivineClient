@@ -1,0 +1,20 @@
+# systemd service: keeps the relay running and restarts it after reboots or crashes.
+#   sudo cp divinesmp-relay.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now divinesmp-relay
+#   journalctl -u divinesmp-relay -f        (watch who connects)
+[Unit]
+Description=DivineSMP web relay (Wisp)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# 127.0.0.1:25565 = where Velocity listens (the "bind" line in velocity.toml).
+# Add --proxy-protocol if velocity.toml has haproxy-protocol = true.
+ExecStart=/usr/bin/python3 /opt/divinesmp-relay/dsmp_relay.py --port 6001 --route "divinesmp.org=127.0.0.1:25565" --route "*.divinesmp.org=127.0.0.1:25565"
+Restart=always
+RestartSec=3
+DynamicUser=yes
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target
